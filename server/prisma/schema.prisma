@@ -14,10 +14,23 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  username  String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id               String     @id @default(cuid())
+  email            String     @unique
+  username         String     @unique
+  password         String
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  sentMessages     Messages[] @relation("SentMessages")
+  receivedMessages Messages[] @relation("ReceivedMessages")
+}
+
+model Messages {
+  id         String   @id @default(cuid())
+  message    String
+  sender     User     @relation("SentMessages", fields: [userId], references: [id])
+  userId     String
+  receiver   User     @relation("ReceivedMessages", fields: [receiverId], references: [id])
+  receiverId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 }
