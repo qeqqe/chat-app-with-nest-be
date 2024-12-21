@@ -28,8 +28,15 @@ export const login = async (data: { email: string; password: string }) => {
       },
       body: JSON.stringify(data),
     });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.message || "Login failed");
+    }
+
     return response.json();
   } catch (error) {
-    console.error(error);
+    console.error("Login error:", error);
+    throw error;
   }
 };

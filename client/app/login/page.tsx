@@ -13,10 +13,10 @@ const Login = () => {
   const router = useRouter();
   const handleSubmit = async () => {
     const response = await login({ email, password });
-    if (!response.ok) return alert("An error occurred");
-    const data = await response.json();
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("user", JSON.stringify(data.user));
+    if (!response) return alert("An error occurred");
+
+    localStorage.setItem("token", response.access_token);
+    localStorage.setItem("user", JSON.stringify(response.user));
     router.push("/dashboard");
   };
 
