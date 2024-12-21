@@ -10,19 +10,51 @@ import { useState } from "react";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const handleSubmit = async () => {
-    const response = await login({ email, password });
-    if (!response) return alert("An error occurred");
 
-    localStorage.setItem("token", response.access_token);
-    localStorage.setItem("user", JSON.stringify(response.user));
-    router.push("/dashboard");
+  const handleSubmit = async () => {
+    try {
+      setError(null);
+      setIsLoading(true);
+
+      if (!email || !password) {
+        setError("Please fill in all fields");
+        return;
+      }
+
+      const response = await login({ email, password });
+      console.log("Login response:", response);
+
+      if (!response || !response.access_token) {
+        setError("Invalid response from server");
+        return;
+      }
+
+      localStorage.setItem("token", `Bearer ${response.access_token}`);
+      localStorage.setItem("user", JSON.stringify(response.user));
+
+      window.location.href = "/dashboard";
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 100);
+    } catch (error: any) {
+      console.error("Login error:", error);
+      setError(error.message || "An unexpected error occurred");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <main className="flex justify-center items-center min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-800">
       <Card className="w-[90%] max-w-[400px] p-4 shadow-xl bg-gradient-to-br from-zinc-800 to-zinc-900 border border-zinc-800">
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3 mb-4 text-red-500 text-sm">
+            {error}
+          </div>
+        )}
         <CardHeader className="flex flex-col gap-2 items-center">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
             Sign in
@@ -61,8 +93,10 @@ const Login = () => {
               variant="shadow"
               size="lg"
               className="w-full mt-2"
+              isLoading={isLoading}
+              isDisabled={isLoading}
             >
-              Login
+              {isLoading ? "Signing in..." : "Login"}
             </Button>
           </form>
           <div className="flex justify-center gap-2 mt-4">

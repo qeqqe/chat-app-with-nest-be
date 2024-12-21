@@ -11,17 +11,35 @@ const Register = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async () => {
-    const response = await register({ username, email, password });
-    if (!response) return alert("An error occurred");
-    router.push("/login");
+    try {
+      setError(null);
+      setIsLoading(true);
+      const response = await register({ username, email, password });
+
+      if (response.message === "User created successfully") {
+        router.push("/login");
+      }
+    } catch (error: any) {
+      setError(error.message || "Registration failed");
+      console.error("Registration error:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <main className="flex justify-center items-center min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-900 to-zinc-800">
       <Card className="w-[90%] max-w-[400px] p-4 shadow-xl bg-gradient-to-br from-zinc-800 to-zinc-900 border border-zinc-800">
+        {error && (
+          <div className="bg-red-500/10 border border-red-500/50 rounded-lg p-3 mb-4 text-red-500 text-sm">
+            {error}
+          </div>
+        )}
         <CardHeader className="flex flex-col gap-2 items-center">
           <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
             Create Account
@@ -71,8 +89,10 @@ const Register = () => {
               variant="shadow"
               size="lg"
               className="w-full mt-2"
+              isLoading={isLoading}
+              isDisabled={isLoading}
             >
-              Register
+              {isLoading ? "Creating account..." : "Register"}
             </Button>
           </form>
           <div className="flex justify-center gap-2 mt-4">
